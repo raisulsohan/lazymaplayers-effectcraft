@@ -46,8 +46,17 @@ control channel for other programs. So LazyMapLayers runs in two parts, as it do
 - **EffectCraft 0.8.0** or newer, installed (or `EFFECTCRAFT_APP` set to `effectcraft.exe`).
 - **Node.js 22** or newer.
 - **Microsoft Edge** or **Google Chrome** (for the panel window).
-- **LazyMapLayers** next to this folder (`../LazyMapLayers`), built once (`node tools/build.mjs` in
-  it): its `dist/` holds the host script and the bundled data, and its `node_modules` the build tools.
+
+## Install
+
+**From a release (recommended).** Download `LazyMapLayers-for-EffectCraft-<version>.zip` from
+[Releases](https://github.com/raisulsohan/lazymaplayers-effectcraft/releases/latest) and unzip it
+anywhere. It is ready to run: the panel, the host script and the bundled data are already built.
+
+**From source.** Clone this repository next to
+[LazyMapLayers](https://github.com/raisulsohan/LazyMapLayers) (`../LazyMapLayers`) and build that
+once (`npm install` and `node tools/build.mjs` in it): its `dist/` holds the host script and the
+bundled data, and its `node_modules` the build tools. The first start here builds `dist/` from it.
 
 ## Start
 
@@ -60,7 +69,7 @@ control channel for other programs. So LazyMapLayers runs in two parts, as it do
    own folder, and the rendered maps live in LazyMapLayers' data folder. Without it the panel says
    so when a render is imported.
 
-The first start builds `dist/` if it is missing. After LazyMapLayers itself changes, build again:
+From source, after LazyMapLayers itself changes, build again:
 
 ```
 node tools/build.mjs
