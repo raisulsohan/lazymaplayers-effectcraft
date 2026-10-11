@@ -1,8 +1,8 @@
-# Draft issues for EffectCraft
+# Issues reported to EffectCraft[#808](https://github.com/storytold/effectcraft/issues/808) |[#809](https://github.com/storytold/effectcraft/issues/809) |[#810](https://github.com/storytold/effectcraft/issues/810) |[#811](https://github.com/storytold/effectcraft/issues/811) |[#812](https://github.com/storytold/effectcraft/issues/812) |[#813](https://github.com/storytold/effectcraft/issues/813) |[#814](https://github.com/storytold/effectcraft/issues/814) |[#815](https://github.com/storytold/effectcraft/issues/815) |[#816](https://github.com/storytold/effectcraft/issues/816) |[#817](https://github.com/storytold/effectcraft/issues/817) |
 
-Drafts of GitHub issues for [storytold/effectcraft](https://github.com/storytold/effectcraft), found
+Issues for [storytold/effectcraft](https://github.com/storytold/effectcraft), found
 while porting LazyMapLayers (a map design and map animation panel for After Effects) to EffectCraft.
-Nothing here has been posted; each section below is one issue, ready to copy.
+All ten were posted on 2026-10-11 (links in the table).
 
 **First, thank you.** LazyMapLayers' host script is about 6,000 lines of After Effects scripting, and
 it runs in EffectCraft with a compatibility layer of a few hundred lines. All 369 kinds of expression
@@ -34,22 +34,24 @@ each API name and topic). Related, not duplicates:
 
 ## Issues
 
-| # | Title | Status |
+| # | Title | Issue |
 |---|---|---|
-| 1 | Scripting: `Layer.comment`, marker parameters and `sourcePointToComp` silently do nothing | new |
-| 2 | Expressions: `layer.source` is undefined; a layer from a Layer Control has no `transform`; errors are not reported | new |
-| 3 | Undo: an undo group with more commands than *Levels of Undo* is not one undo step | new |
-| 4 | Scripting: every access returns a new object (`layer.containingComp === comp` is false) | new |
-| 5 | Scripting: `app.executeCommand(16)` is not Undo (EffectCraft's own command numbers) | new |
-| 6 | Scripting: replacing a layer's source, image sequences and proxies | new |
-| 7 | Keyframes: `removeKey` gets slower with every key on the property (removing 1,000 keys takes 18 s) | new |
-| 8 | Scripting: After Effects matchNames for stroke Dashes and text Path Options | new |
-| 9 | Scripting: smaller gaps (`saveFrameToPng`, `layer.position`, `app.fonts`, `Folder.temp`, `$.getenv`, `File.rename`, `e.line`) | new |
-| 10 | Scripting: `File` with `encoding = "BINARY"` turns byte 0x89 into U+FFFD | new |
+| 1 | Scripting: `Layer.comment`, marker parameters and `sourcePointToComp` silently do nothing | [#808](https://github.com/storytold/effectcraft/issues/808) |
+| 2 | Expressions: `layer.source` is undefined; a layer from a Layer Control has no `transform`; errors are not reported | [#809](https://github.com/storytold/effectcraft/issues/809) |
+| 3 | Undo: an undo group with more commands than *Levels of Undo* is not one undo step | [#810](https://github.com/storytold/effectcraft/issues/810) |
+| 4 | Scripting: every access returns a new object (`layer.containingComp === comp` is false) | [#811](https://github.com/storytold/effectcraft/issues/811) |
+| 5 | Scripting: `app.executeCommand(16)` is not Undo (EffectCraft's own command numbers) | [#812](https://github.com/storytold/effectcraft/issues/812) |
+| 6 | Scripting: replacing a layer's source, image sequences and proxies | [#813](https://github.com/storytold/effectcraft/issues/813) |
+| 7 | Keyframes: `removeKey` gets slower with every key on the property (removing 1,000 keys takes 18 s) | [#814](https://github.com/storytold/effectcraft/issues/814) |
+| 8 | Scripting: After Effects matchNames for stroke Dashes and text Path Options | [#815](https://github.com/storytold/effectcraft/issues/815) |
+| 9 | Scripting: smaller gaps (`saveFrameToPng`, `layer.position`, `app.fonts`, `Folder.temp`, `$.getenv`, `File.rename`, `e.line`) | [#816](https://github.com/storytold/effectcraft/issues/816) |
+| 10 | Scripting: `File` with `encoding = "BINARY"` turns byte 0x89 into U+FFFD | [#817](https://github.com/storytold/effectcraft/issues/817) |
 
 ---
 
 ## 1. Scripting: `Layer.comment`, marker parameters and `sourcePointToComp` silently do nothing
+
+Posted as [#808](https://github.com/storytold/effectcraft/issues/808).
 
 **What happens.** Three calls succeed without an error and change nothing:
 
@@ -119,6 +121,8 @@ anchor point, position, scale and rotation and its parents' at the comp's curren
 ---
 
 ## 2. Expressions: `layer.source` is undefined; a layer from a Layer Control has no `transform`; errors are not reported
+
+Posted as [#809](https://github.com/storytold/effectcraft/issues/809).
 
 **What happens.** In expressions:
 
@@ -203,6 +207,8 @@ checked against After Effects' maths on real EffectCraft layers (`tools/check-ex
 
 ## 3. Undo: an undo group with more commands than *Levels of Undo* is not one undo step
 
+Posted as [#810](https://github.com/storytold/effectcraft/issues/810).
+
 **What happens.** With *Settings ▸ General ▸ Levels of Undo* at 32 (the default), a script's undo
 group of 40 commands does not become one undo step: one Undo removes only the last command. Each
 command seems to take one level of the undo history even inside a group, so a group larger than the
@@ -256,6 +262,8 @@ is more than 32 commands. The README tells users to raise *Levels of Undo* to 99
 
 ## 4. Scripting: every access returns a new object (`layer.containingComp === comp` is false)
 
+Posted as [#811](https://github.com/storytold/effectcraft/issues/811).
+
 **What happens.** Every access builds a new wrapper object, so comparing objects never works:
 `layer.containingComp === comp`, `comp.layer(1) === comp.layer(1)`, `child.parent === layer` and
 `app.project.item(1) === app.project.item(1)` are all `false`. Scripts written for After Effects
@@ -293,6 +301,8 @@ layers.
 ---
 
 ## 5. Scripting: `app.executeCommand(16)` is not Undo (EffectCraft's own command numbers)
+
+Posted as [#812](https://github.com/storytold/effectcraft/issues/812).
 
 **What happens.** `app.executeCommand(number)` treats the number as a position in EffectCraft's own
 command list ([prelude.js#L1802](https://github.com/storytold/effectcraft/blob/f953cd2855bf36beffa6a4d608e9bf4b226e9442/crates/script/src/prelude.js#L1802)),
@@ -340,6 +350,8 @@ and stay stable.
 ---
 
 ## 6. Scripting: replacing a layer's source, image sequences and proxies
+
+Posted as [#813](https://github.com/storytold/effectcraft/issues/813).
 
 **What happens.**
 
@@ -415,6 +427,8 @@ the layer centred on its source and as long as it).
 
 ## 7. Keyframes: `removeKey` gets slower with every key on the property (removing 1,000 keys takes 18 s)
 
+Posted as [#814](https://github.com/storytold/effectcraft/issues/814).
+
 **What happens.** `Property.removeKey` costs time in proportion to the number of keys on the
 property, so removing all keys one by one is quadratic: 3 ms per call with 100 keys, 40 ms with 1,000,
 82 ms with 2,000, and removing 1,000 keys takes 18 seconds. LazyMapLayers puts a key on every frame
@@ -469,6 +483,8 @@ between frames when a script asks for them. LazyMapLayers allows for it.
 ---
 
 ## 8. Scripting: After Effects matchNames for stroke Dashes and text Path Options
+
+Posted as [#815](https://github.com/storytold/effectcraft/issues/815).
 
 **What happens.**
 
@@ -526,6 +542,8 @@ and preset imports and expressions such as `content("Stroke 1").dash` consistent
 ---
 
 ## 9. Scripting: smaller gaps
+
+Posted as [#816](https://github.com/storytold/effectcraft/issues/816).
 
 Each of these is small; together they are what most After Effects scripts trip over first.
 
@@ -587,6 +605,8 @@ from the first frame of `e.stack`. The companion program passes paths in, so the
 ---
 
 ## 10. Scripting: `File` with `encoding = "BINARY"` turns byte 0x89 into U+FFFD
+
+Posted as [#817](https://github.com/storytold/effectcraft/issues/817).
 
 **What happens.** File I/O is text only. Reading a PNG with `encoding = "BINARY"` decodes it as
 UTF-8: its first byte 0x89 comes back as U+FFFD. In the earlier session (in the app, with *Allow
