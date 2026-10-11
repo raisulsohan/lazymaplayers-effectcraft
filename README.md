@@ -7,6 +7,17 @@ compositor written in Rust.
 This folder holds only what EffectCraft needs on top of LazyMapLayers. The After Effects version in
 `../LazyMapLayers` stays as it is: this version is built from it.
 
+## 🎬 Video tutorials
+
+<p align="center"><strong>Learn LazyMapLayers on YouTube:</strong> <a href="https://youtu.be/FkpwM74xt-s">the complete tutorial</a> shows every tool, and <a href="https://www.youtube.com/playlist?list=PLdM39o5SFdHk">the tutorial playlist</a> has the lessons one by one. They are filmed in After Effects; the panel here is the same, so every tool works the same way in EffectCraft.</p>
+
+<p align="center">
+  <a href="https://youtu.be/FkpwM74xt-s"><img src="https://img.shields.io/badge/%E2%96%B6%20Watch-Complete%20tutorial-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch the complete LazyMapLayers tutorial on YouTube" /></a>
+  <a href="https://www.youtube.com/playlist?list=PLdM39o5SFdHk"><img src="https://img.shields.io/badge/%E2%96%B6%20YouTube-Tutorial%20playlist-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="The LazyMapLayers tutorial playlist on YouTube" /></a>
+</p>
+
+<p align="center"><a href="https://youtu.be/FkpwM74xt-s"><img src="https://img.youtube.com/vi/FkpwM74xt-s/maxresdefault.jpg" width="560" alt="LazyMapLayers Complete Tutorial: Every Tool for Free Map Animation in After Effects, on YouTube" /></a></p>
+
 ## How it works
 
 EffectCraft has no HTML extension panels (CEP), but it runs After Effects-style scripts and has a
