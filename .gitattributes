@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.png binary
+# Windows batch files need CRLF line endings; shell scripts need LF.
+*.cmd text eol=crlf
+*.sh text eol=lf
