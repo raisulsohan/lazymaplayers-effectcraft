@@ -93,28 +93,36 @@ on real EffectCraft layers (`tools/check-expressions.ts`: 369 of 369).
 
 ## Known limitations (EffectCraft 0.8.0)
 
-Things the compatibility layer cannot change; they need EffectCraft itself.
+Things the compatibility layer cannot change; they need EffectCraft itself. The gaps are reported to
+EffectCraft as [#808 – #817](https://github.com/storytold/effectcraft/issues?q=is%3Aissue+author%3Araisulsohan)
+(details and repros: [docs/effectcraft-issues.md](docs/effectcraft-issues.md)).
 
-- **Undo of large actions.** An undo group with more commands than EffectCraft's *Levels of Undo*
-  (32 by default, 99 at most) does not become one undo step: only its last steps undo, one by one.
-  Small actions (a map, a pin, a view key) are one undo step as in After Effects; labels, flights and
-  shot lists are not. Raising **Settings ▸ General ▸ Levels of Undo** to 99 helps up to 98 commands.
-- **Keyframe speed.** Each keyframe is one engine command (about 3 ms): applying a long shot list
-  takes seconds, not milliseconds. Removing keys is fast (a whole range in one command).
+- **Undo of large actions** ([#810](https://github.com/storytold/effectcraft/issues/810)). An undo
+  group with more commands than EffectCraft's *Levels of Undo* (32 by default, 99 at most) does not
+  become one undo step: only its last steps undo, one by one. Small actions (a map, a pin, a view key)
+  are one undo step as in After Effects; labels, flights and shot lists are not. Raising
+  **Settings ▸ General ▸ Levels of Undo** to 99 helps up to 98 commands.
+- **Keyframe speed.** Each keyframe is one engine command (about 3 ms in the app): applying a long shot
+  list takes seconds, not milliseconds. Removing keys one by one gets slower with every key on the
+  property ([#814](https://github.com/storytold/effectcraft/issues/814)); this version removes a whole
+  range in one command instead.
 - **Keys on whole frames.** EffectCraft puts every keyframe on a frame; After Effects allows keys
-  between frames. A key asked for at 3.5 s in a 25 fps comp lands on a frame.
-- **Single precision.** Keyframe values are stored as 32-bit floats (about 5 cm on the ground for a
-  latitude); the generated expressions already allow for it.
+  between frames. A key asked for at 3.5 s in a 25 fps comp lands on 3.48 s.
+- **Single precision.** LazyMapLayers' ES1 test saw keyframe values stored as 32-bit floats in the app
+  (about 5 cm on the ground for a latitude); the generated expressions already allow for it. Keys set
+  from `effectcraft-cli` keep full precision, so this may depend on how the app stores them.
 - **One expression engine.** EffectCraft runs every expression in its JavaScript engine; there is no
-  Legacy ExtendScript engine to choose.
-- **Shape layers render slowly.** A detailed country outline as a shape layer adds most of a second
-  to an EffectCraft frame.
+  Legacy ExtendScript engine to choose. LazyMapLayers' expressions run in both, so this changes nothing.
+- **Detailed outlines render slowly.** A country outline as a shape layer (many paths, with
+  expressions) added most of a second to an EffectCraft frame. A single 20,000-point path renders in
+  about 18 ms, so it is the many paths or their expressions.
 - **Fonts.** Fonts After Effects carries itself (Myriad Pro and others) are not on the system;
   labels and callouts use the next font in their list that is installed.
-- **Replacing a layer's source** (used when a copied scene gets its own map, and for pictures in a
-  label design) is done by putting a new layer in the old one's place. Its transform, timing, effects
-  (values, keys, easing, expressions), switches, name, comment, parent and children come along; its
-  masks, layer styles and track matte do not.
+- **Replacing a layer's source** ([#813](https://github.com/storytold/effectcraft/issues/813); used
+  when a copied scene gets its own map, and for pictures in a label design) is done by putting a new
+  layer in the old one's place. Its transform, timing, effects (values, keys, easing, expressions),
+  switches, name, comment, parent and children come along; its masks, layer styles and track matte do
+  not.
 - **Your own imagery test.** LazyMapLayers' OI1 test starts a tile server inside the panel, which a
   browser window cannot; the feature itself (imagery from a server on this computer) uses the
   companion's downloads.
@@ -125,24 +133,24 @@ Things the compatibility layer cannot change; they need EffectCraft itself.
 listed in the panel's `ping` (`effectcraft.compat`) and works only in EffectCraft; nothing changes in
 After Effects. They use EffectCraft's own engine commands, never its files.
 
-| EffectCraft 0.8.0 | Here |
-|---|---|
-| `Layer.comment` cannot be written (every LazyMapLayers tag lives there) | written with `layer.setComment` |
-| Expressions: `layer.source.width/height`, `layer.transform.scale` and `fromComp()` fail silently (the property keeps its own value) | the expressions LazyMapLayers writes use `layer.width/height`, `layer.scale` and the inverse of `toComp()` |
-| A new object on every access (`a.containingComp === b.containingComp` is false) | one object per item and layer |
-| Nested undo groups: an inner end closes the group | only the outermost group reaches EffectCraft |
-| `app.executeCommand(16)` is not Undo (EffectCraft's own numbering) | After Effects' Undo id is translated |
-| `sourcePointToComp`, `compPointToSource` return the point unchanged | the layer's 2D transform and its parents' |
-| Marker parameters are dropped without a cue point name | kept as a cue point with an empty name |
-| `CompItem.saveFrameToPng` missing | Composition ▸ Save Frame As |
-| Removing a key takes about 38 ms | a whole range in one command |
-| Dashes and text path options have other matchNames | the After Effects names find them |
-| `AVLayer.replaceSource` "not supported yet" | a new layer in the old one's place |
-| `layer.anchorPoint`, `layer.position`… missing | read from `layer.transform` |
-| `FootageItem.replaceWithSequence`, `setProxyWithSequence`, `setProxyToNone` missing; `proxySource`, `useProxy` fixed stubs; `mainSource.conformFrameRate` has no effect | EffectCraft's Replace Footage, Proxy and Interpret Footage commands |
-| No `app.fonts`; `TextDocument.font` takes a family, not a PostScript name | PostScript names matched to installed families and styles |
-| A pass layer keeps its old anchor point and out point when a render of another size or length replaces its footage | centred and as long as its footage |
-| Errors carry no line number | the line, from the stack |
+| EffectCraft 0.8.0 | Here | Issue |
+|---|---|---|
+| `Layer.comment` cannot be written (every LazyMapLayers tag lives there) | written with `layer.setComment` | [#808](https://github.com/storytold/effectcraft/issues/808) |
+| Expressions: `layer.source` is undefined, and a layer reached through a Layer Control has no `transform`; the failing expression silently keeps the property's own value | the expressions LazyMapLayers writes use `layer.width/height` and `layer.scale` (and the inverse of `toComp()` for `fromComp()`) | [#809](https://github.com/storytold/effectcraft/issues/809) |
+| A new object on every access (`a.containingComp === b.containingComp` is false) | one object per item and layer | [#811](https://github.com/storytold/effectcraft/issues/811) |
+| Nested undo groups (seen once in the app; one undo step in `effectcraft-cli`) | only the outermost group reaches EffectCraft | |
+| `app.executeCommand(16)` is not Undo (EffectCraft's own numbering) | After Effects' Undo id is translated | [#812](https://github.com/storytold/effectcraft/issues/812) |
+| `sourcePointToComp`, `compPointToSource` return the point unchanged | the layer's 2D transform and its parents' | [#808](https://github.com/storytold/effectcraft/issues/808) |
+| Marker parameters are dropped without a cue point name | kept as a cue point with an empty name | [#808](https://github.com/storytold/effectcraft/issues/808) |
+| `CompItem.saveFrameToPng` missing | Composition ▸ Save Frame As | [#816](https://github.com/storytold/effectcraft/issues/816) |
+| Removing a key gets slower with every key (about 40 ms with 1,000 keys) | a whole range in one command | [#814](https://github.com/storytold/effectcraft/issues/814) |
+| Dashes and text path options have other matchNames | the After Effects names find them | [#815](https://github.com/storytold/effectcraft/issues/815) |
+| `AVLayer.replaceSource` "not supported yet" | a new layer in the old one's place | [#813](https://github.com/storytold/effectcraft/issues/813) |
+| `layer.anchorPoint`, `layer.position`… missing | read from `layer.transform` | [#816](https://github.com/storytold/effectcraft/issues/816) |
+| `FootageItem.replaceWithSequence`, `setProxyWithSequence`, `setProxyToNone` missing; `proxySource`, `useProxy` fixed stubs; `mainSource.conformFrameRate` has no effect | EffectCraft's Replace Footage, Proxy and Interpret Footage commands | [#813](https://github.com/storytold/effectcraft/issues/813) |
+| No `app.fonts`; a `TextDocument` set by PostScript name reports that name as its family (the text itself renders right) | PostScript names matched to installed families and styles | [#816](https://github.com/storytold/effectcraft/issues/816) |
+| A pass layer keeps its old anchor point and out point when a render of another size or length replaces its footage | centred and as long as its footage | [#813](https://github.com/storytold/effectcraft/issues/813) |
+| Errors carry no line number (`e.line`) | the line, from the stack | [#816](https://github.com/storytold/effectcraft/issues/816) |
 
 ## Security
 
