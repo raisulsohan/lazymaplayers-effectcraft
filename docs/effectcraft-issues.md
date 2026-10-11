@@ -1,4 +1,4 @@
-# Issues reported to EffectCraft[#808](https://github.com/storytold/effectcraft/issues/808) |[#809](https://github.com/storytold/effectcraft/issues/809) |[#810](https://github.com/storytold/effectcraft/issues/810) |[#811](https://github.com/storytold/effectcraft/issues/811) |[#812](https://github.com/storytold/effectcraft/issues/812) |[#813](https://github.com/storytold/effectcraft/issues/813) |[#814](https://github.com/storytold/effectcraft/issues/814) |[#815](https://github.com/storytold/effectcraft/issues/815) |[#816](https://github.com/storytold/effectcraft/issues/816) |[#817](https://github.com/storytold/effectcraft/issues/817) |
+# Issues reported to EffectCraft
 
 Issues for [storytold/effectcraft](https://github.com/storytold/effectcraft), found
 while porting LazyMapLayers (a map design and map animation panel for After Effects) to EffectCraft.
