@@ -1,5 +1,7 @@
 # LazyMapLayers for EffectCraft
 
+<p align="center"><a href="https://github.com/raisulsohan/lazymaplayers-effectcraft/releases/latest"><img src="docs/images/cover.png" width="100%" alt="LazyMapLayers now runs in EffectCraft: 369 of 369 expressions match After Effects; unzip and run; free, MIT. A globe rendered by LazyMapLayers, with names in their own scripts." /></a></p>
+
 LazyMapLayers (the map design and map animation panel for After Effects) running in
 [EffectCraft](https://github.com/storytold/effectcraft), the open-source After Effects-style
 compositor written in Rust.
