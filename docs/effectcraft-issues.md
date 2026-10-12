@@ -46,8 +46,8 @@ each API name and topic). Related, not duplicates:
 | 8 | Scripting: After Effects matchNames for stroke Dashes and text Path Options | [#815](https://github.com/storytold/effectcraft/issues/815) |
 | 9 | Scripting: smaller gaps (`saveFrameToPng`, `layer.position`, `app.fonts`, `Folder.temp`, `$.getenv`, `File.rename`, `e.line`) | [#816](https://github.com/storytold/effectcraft/issues/816) |
 | 10 | Scripting: `File` with `encoding = "BINARY"` turns byte 0x89 into U+FFFD | [#817](https://github.com/storytold/effectcraft/issues/817) |
-| 11 | Expressions: `sampleImage()` on a footage layer gives `[0, 0, 0, 0]` | draft, not posted yet |
-| 12 | Scripting: a layer selected by script in a comp that is not open is not selected in the next script | draft, not posted yet |
+| 11 | Expressions: `sampleImage()` on a footage layer gives `[0, 0, 0, 0]` | [#1000](https://github.com/storytold/effectcraft/issues/1000) |
+| 12 | Scripting: a layer selected by script in a comp that is not open is not selected in the next script | [#1001](https://github.com/storytold/effectcraft/issues/1001) |
 
 ---
 
@@ -644,7 +644,7 @@ the host script only reads and writes text.
 
 ## 11. Expressions: `sampleImage()` on a footage layer gives `[0, 0, 0, 0]`
 
-Draft (found 2026-10-12 with LazyMapLayers 1.2, not posted yet).
+Posted as [#1000](https://github.com/storytold/effectcraft/issues/1000) (found 2026-10-12 with LazyMapLayers 1.2).
 
 **What happens.** `sampleImage()` reads the right colour from a solid, a shape layer and a precomp of a
 solid, but from an imported image (a PNG) it gives `[0, 0, 0, 0]`, at any point and any time, with no
@@ -691,7 +691,7 @@ were not compared (a warning) instead of failing. Nothing else in LazyMapLayers 
 
 ## 12. Scripting: a layer selected by script in a comp that is not open is not selected in the next script
 
-Draft (found 2026-10-12 with LazyMapLayers 1.2, not posted yet).
+Posted as [#1001](https://github.com/storytold/effectcraft/issues/1001) (found 2026-10-12 with LazyMapLayers 1.2).
 
 **What happens.** `layer.selected = true` in a comp that is not the one open in the viewer shows in
 `comp.selectedLayers` for the rest of that script, but the next script (the next call over

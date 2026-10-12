@@ -156,10 +156,10 @@ EffectCraft as [#808 – #817](https://github.com/storytold/effectcraft/issues?q
 - **Your own imagery test.** LazyMapLayers' OI1 test starts a tile server inside the panel, which a
   browser window cannot; the feature itself (imagery from a server on this computer) uses the
   companion's downloads.
-- **Self-test pixels.** The Self-test (Maps ▸ About) checks that After Effects shows the rendered frame's
+- **Self-test pixels** ([#1000](https://github.com/storytold/effectcraft/issues/1000)). The Self-test (Maps ▸ About) checks that After Effects shows the rendered frame's
   colours with `sampleImage()`, which gives `[0, 0, 0, 0]` on footage in EffectCraft 0.8.0. That check
   is reported as not compared (a warning) instead of failing; the other four checks run as in After Effects.
-- **Selection in a comp that is not open.** EffectCraft keeps layers selected by a script only in the
+- **Selection in a comp that is not open** ([#1001](https://github.com/storytold/effectcraft/issues/1001)). EffectCraft keeps layers selected by a script only in the
   comp open in the viewer. Selecting in the scene you are working in (the usual way, for a label
   template from a text layer or the layers names keep away from) works; LazyMapLayers' LB2 and LB3
   tests, which select by script in a
@@ -189,7 +189,7 @@ After Effects. They use EffectCraft's own engine commands, never its files.
 | No `app.fonts`; a `TextDocument` set by PostScript name reports that name as its family (the text itself renders right) | PostScript names matched to installed families and styles | [#816](https://github.com/storytold/effectcraft/issues/816) |
 | A pass layer keeps its old anchor point and out point when a render of another size or length replaces its footage | centred and as long as its footage | [#813](https://github.com/storytold/effectcraft/issues/813) |
 | Errors carry no line number (`e.line`) | the line, from the stack | [#816](https://github.com/storytold/effectcraft/issues/816) |
-| `sampleImage()` gives `[0, 0, 0, 0]` on footage (the Self-test's pixel check) | no sample reported, so the Self-test warns instead of failing | draft |
+| `sampleImage()` gives `[0, 0, 0, 0]` on footage (the Self-test's pixel check) | no sample reported, so the Self-test warns instead of failing | [#1000](https://github.com/storytold/effectcraft/issues/1000) |
 | (not EffectCraft's) the page has no Node `zlib`; Overpass answers come gzipped | the companion unpacks answers before the panel sees them | |
 
 ## Security
