@@ -1,6 +1,6 @@
 # LazyMapLayers for EffectCraft
 
-<p align="center"><a href="https://github.com/raisulsohan/lazymaplayers-effectcraft/releases/latest"><img src="docs/images/cover.png" width="100%" alt="LazyMapLayers now runs in EffectCraft: 621 of 621 expressions match After Effects; unzip and run; free, MIT. A globe rendered by LazyMapLayers, with names in their own scripts." /></a></p>
+<p align="center"><a href="https://github.com/raisulsohan/lazymaplayers-effectcraft/releases/latest"><img src="docs/images/cover.png" width="100%" alt="LazyMapLayers now runs in EffectCraft: 657 of 657 expressions match After Effects; unzip and run; free, MIT. A globe rendered by LazyMapLayers, with names in their own scripts." /></a></p>
 
 LazyMapLayers (the map design and map animation panel for After Effects) running in
 [EffectCraft](https://github.com/storytold/effectcraft), the open-source After Effects-style
@@ -92,14 +92,15 @@ node tools/build.mjs
 
 ## What works
 
-LazyMapLayers 1.2.0's own in-app test suites, run in EffectCraft 0.8.0 through this version
+LazyMapLayers 1.3.0's own in-app test suites, run in EffectCraft 0.8.0 through this version
 (`tools/run-suites.mjs`), and every kind of generated expression compared with After Effects' maths
-on real EffectCraft layers (`tools/check-expressions.ts`: 621 of 621, in 59 kinds, the arrow rig's
-included).
+on real EffectCraft layers (`tools/check-expressions.ts`: 657 of 657, in 62 kinds, the arrow rig's and
+the borders between areas included).
 
 | Suite | What | In EffectCraft |
 |---|---|---|
 | H1 | Host API through the bridge, one undo step per action | 9 / 9 |
+| FB1 | The feature browser, with 1.3's TCX import, lines from a hub and the borders between areas as one shape layer of open paths | pass |
 | AR1 | The arrow rig (1.2): line and head on one layer, tapered, dashed, both ends | pass |
 | RR1 | Routes on roads (1.2), roads from Overpass, kept on disk | pass |
 | SF1 | The Self-test (1.2) | 4 of 5 pass, one warning (see below) |
@@ -111,10 +112,10 @@ included).
 | G1, G2 | Globe, globe pins | pass |
 | AT1, MF1 | Your own layers attached to a place; scale bar, north arrow, graticule | pass |
 | RT1, DR1 | Routes, travellers, dashed lines; drawn paths as routes | pass |
-| SL1, HL1 | Outlines as shape layers; highlights as their own pass | pass (SL1: slow, see below) |
+| SL1, HL1 | Outlines as shape layers; highlights as their own pass | HL1 pass; SL1 all but its speed check (one outline adds 667 ms to a frame, see below) |
 | LB2 – LB6 | Label template, keep-out zones, nature names, names inside Paris along their streets, oceans on a globe | pass in 1.1.2; LB2 and LB3 select layers by script in a comp that is not open, see below |
 | LD1, LD2 | Label designs of your own, with each place's picture | pass |
-| FO1, FB1, LK1 | A map that follows another; the feature browser; your own looks | pass |
+| FO1, LK1 | A map that follows another; your own looks | pass |
 | DT1, DT2, DT3, HT1 | Numbers on the map, categories and years, prisms, heat | pass |
 | OW1, WB1, SAT1 | The offline world, cities and roads at zooms 7 – 9, satellite imagery | pass |
 | SH1 | The shot list: 601 frames match the camera maths | pass but speed (see below) |
@@ -144,8 +145,9 @@ EffectCraft as [#808 – #817](https://github.com/storytold/effectcraft/issues?q
 - **One expression engine.** EffectCraft runs every expression in its JavaScript engine; there is no
   Legacy ExtendScript engine to choose. LazyMapLayers' expressions run in both, so this changes nothing.
 - **Detailed outlines render slowly.** A country outline as a shape layer (many paths, with
-  expressions) added most of a second to an EffectCraft frame. A single 20,000-point path renders in
-  about 18 ms, so it is the many paths or their expressions.
+  expressions) adds about two thirds of a second to an EffectCraft frame (SL1: 667 ms). A single
+  20,000-point path without expressions renders in about 18 ms, so it is the many paths or their
+  expressions.
 - **Fonts.** Fonts After Effects carries itself (Myriad Pro and others) are not on the system;
   labels and callouts use the next font in their list that is installed.
 - **Replacing a layer's source** ([#813](https://github.com/storytold/effectcraft/issues/813); used

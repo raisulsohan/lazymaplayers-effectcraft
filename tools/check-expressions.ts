@@ -21,7 +21,8 @@ const { cameraRigExpressions, groundFrameFor, pin3dPositionExpression } = await 
 const { followExpressions } = await core("ae/followExpressions.ts");
 const { anchoredPositionExpression, curvedLabelPathExpression, leaderPathExpression, routePathExpression, streetLabelExpressions, travellerExpressions } = await core("ae/labelExpressions.ts");
 const { float32, pinExpressions } = await core("ae/pinExpressions.ts");
-const { lodPathExpression, shapePathExpressions, shapeRings } = await core("ae/shapeExpressions.ts");
+// shapeLines and shapeLineExpressions (the borders between areas) are LazyMapLayers 1.3's.
+const { lodPathExpression, shapeLineExpressions, shapeLines, shapePathExpressions, shapeRings } = await core("ae/shapeExpressions.ts");
 const { minimapBoxExpression, northRotationExpression, scaleBarPathExpression, scaleBarTextExpression } = await core("ae/mapFurniture.ts");
 const { arrowRigExpressions } = await core("ae/arrowRig.ts");
 const { greatCircle } = await core("geo/greatCircle.ts");
@@ -130,6 +131,11 @@ for (const globe of [false, true]) {
     add(`traveller position ${kind} ${i}`, traveller.position, { own: travellerOwn, map, comp, value: [0, 0] });
     add(`traveller rotation ${kind} ${i}`, traveller.rotation, { own: travellerOwn, map, comp, value: 10 }, 1e-5);
     add(`traveller opacity ${kind} ${i}`, traveller.opacity, { own: travellerOwn, map, comp, value: 90 });
+    if (shapeLineExpressions) {
+      const jag = (k: number) => Array.from({ length: 12 }, (_, p) => [a.lng + (b.lng - a.lng) * (p / 11) + k * spread * 0.01, a.lat + (b.lat - a.lat) * (p / 11) + (random() - 0.5) * spread * 0.01]);
+      const borders = shapeLines([jag(0), jag(1), jag(2)]).lines;
+      shapeLineExpressions(borders).forEach((code: string, part: number) => add(`border line ${part} ${kind} ${i}`, code, { own: { Map: "MAP" }, map, comp, value: null }));
+    }
     const arrow = arrowRigExpressions(route, map.height / 1080);
     const arrowProgress = float32(random() * 100);
     const arrowOwn = {
