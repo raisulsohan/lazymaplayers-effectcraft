@@ -145,6 +145,11 @@ const fsShim = {
   linkSync(from: string, to: string): void {
     syncCall("link", { from: String(from), to: String(to) });
   },
+  /** Times as Node takes them: a Date, or seconds since 1970. */
+  utimesSync(p: string, atime: Date | number, mtime: Date | number): void {
+    const seconds = (t: Date | number) => (t instanceof Date ? t.getTime() / 1000 : Number(t));
+    syncCall("utimes", { p: String(p), atime: seconds(atime), mtime: seconds(mtime) });
+  },
   realpathSync(p: string): string {
     return syncJson<{ v: string }>("realpath", { p: String(p) }).v;
   },
@@ -265,6 +270,7 @@ const osShim = {
   tmpdir: () => ENV.tmp,
   platform: () => ENV.platform,
   release: () => ENV.release,
+  arch: () => ENV.arch,
   EOL: WIN ? "\r\n" : "\n",
   cpus: () => Array.from({ length: navigator.hardwareConcurrency || 4 }, () => ({ model: "", speed: 0 }))
 };

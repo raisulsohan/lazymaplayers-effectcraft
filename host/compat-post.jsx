@@ -12,15 +12,30 @@
     };
     LMLEC.fixes.push("generated expressions rewritten");
 
-    // app.version is "26.0 (EffectCraft 0.8.0)": the panel shows the app it runs in.
+    // app.version stays "26.0 (EffectCraft 0.8.0)": the Self-test reads the After Effects version EffectCraft
+    // stands for from its start, and the panel's host line picks out the name (tools/build.mjs).
     var ping = LML.api.ping;
     LML.api.ping = function () {
         var info = ping();
-        var named = /\((EffectCraft [^)]+)\)/.exec(String(info.appVersion));
-        if (named) info.appVersion = named[1];
         info.effectcraft = { compat: LMLEC.fixes };
         return info;
     };
+
+    /*
+     * The Self-test samples the rendered frame with sampleImage(); in EffectCraft 0.8.0 that gives
+     * [0, 0, 0, 0] on a footage layer (and a precomp holding one), which an opaque frame never is. Then
+     * no sample is reported, and the Self-test says the pixels were not compared instead of failing.
+     */
+    if (LML.selfTest && LML.selfTest.run) {
+        var selfTestRun = LML.selfTest.run;
+        LML.selfTest.run = function (args) {
+            var out = selfTestRun(args);
+            var s = out && out.sample;
+            if (s && s.length >= 4 && s[0] === 0 && s[1] === 0 && s[2] === 0 && s[3] === 0) out.sample = null;
+            return out;
+        };
+        LMLEC.fixes.push("Self-test: no pixel comparison where sampleImage reads footage as empty");
+    }
 
     /*
      * When a render of another size replaces a pass's footage (a half-size preview, then the final),

@@ -6,6 +6,7 @@ export type EcEnv = {
   token: string;
   platform: string;
   release: string;
+  arch: string;
   pid: number;
   root: string;
   home: string;
@@ -27,6 +28,7 @@ const env = window.__LMLEC__;
 
 (globalThis as unknown as { process: unknown }).process = {
   platform: env.platform,
+  arch: env.arch,
   env: env.env,
   pid: env.pid,
   versions: {},

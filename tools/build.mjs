@@ -61,7 +61,8 @@ const swap = {
       const swapped = replacements.get(resolved);
       return swapped ? { path: swapped } : undefined;
     });
-    // The host line under the panel names the app it runs in (ping gives "EffectCraft 0.8.0" here).
+    // The host line under the panel names the app it runs in: "EffectCraft 0.8.0" out of ping's
+    // "26.0 (EffectCraft 0.8.0)".
     const store = path.join(lml, "src", "panel", "store.ts");
     build.onLoad({ filter: /store\.ts$/ }, (args) => {
       if (path.resolve(args.path) !== store) return undefined;
@@ -71,7 +72,7 @@ const swap = {
         console.warn("warning: the host line in src/panel/store.ts changed; it still says After Effects");
         return undefined;
       }
-      return { contents: text.replace(from, "`${info.appVersion} · LazyMapLayers ${info.lml}`"), loader: "ts" };
+      return { contents: text.replace(from, "`${(/\\((EffectCraft [^)]+)\\)/.exec(info.appVersion) ?? [\"\", info.appVersion])[1]} · LazyMapLayers ${info.lml}`"), loader: "ts" };
     });
   }
 };
@@ -152,6 +153,8 @@ await esbuild.build({
 
 // Data: LazyMapLayers' bundled data, as its build left it.
 copyDir(path.join(lml, "dist", "data"), path.join(dist, "data"));
+// The manifest only says the version (the Self-test reads it); CEP never loads this build.
+copy(path.join(lml, "dist", "CSXS", "manifest.xml"), path.join(dist, "CSXS", "manifest.xml"));
 copy(path.join(lml, "LICENSE"), path.join(dist, "LICENSE"));
 
 const kb = (f) => (fs.statSync(path.join(dist, f)).size / 1024).toFixed(0) + " KB";

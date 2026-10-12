@@ -21,6 +21,7 @@ import http from "node:http";
 import https from "node:https";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { Control } from "./control.mjs";
 
@@ -42,8 +43,14 @@ const AE_DATA = process.env.LMLEC_AE_DATA || path.join(APP_DATA, "LazyMapLayers"
 /** This version's own data folder: its render queue, renders, drafts and settings. */
 const USER_DATA = path.join(APP_DATA, "LazyMapLayers for EffectCraft");
 /** Downloads both versions use: linked from this version's data folder to the After Effects version's. */
-const SHARED_DOWNLOADS = ["offline", "regions", "terrain", "history", "imagery", "boundaries", "osm", "satellite", "districts"];
+const SHARED_DOWNLOADS = ["offline", "regions", "terrain", "history", "imagery", "boundaries", "osm", "osm-cache", "osm-roads", "satellite", "districts"];
 const LOG = path.join(os.tmpdir(), "LazyMapLayers", "effectcraft-companion.log");
+/**
+ * The panel's temp folder: its own, so its job files, panel log and in-app test requests
+ * (LazyMapLayers/spikes) never meet the After Effects version's when both run at once.
+ */
+const PANEL_TMP = path.join(os.tmpdir(), "LazyMapLayers for EffectCraft");
+fs.mkdirSync(PANEL_TMP, { recursive: true });
 
 function log(message) {
   const line = `${new Date().toISOString()} ${message}`;
@@ -273,6 +280,10 @@ const fsOps = {
     fs.linkSync(from, to);
     return {};
   },
+  utimes: ({ p, atime, mtime }) => {
+    fs.utimesSync(p, atime, mtime);
+    return {};
+  },
   realpath: ({ p }) => ({ v: fs.realpathSync(p) }),
   hash: ({ algorithm }, body) => ({ v: crypto.createHash(algorithm).update(body).digest("hex") })
 };
@@ -307,13 +318,24 @@ function proxy(request, response, body) {
   const method = String(request.headers["x-method"] ?? "GET");
   const client = url.startsWith("https:") ? https : http;
   const upstream = client.request(url, { method, headers }, (answer) => {
+    // A packed answer (the panel asks Overpass for gzip) is unpacked here: the page has no
+    // synchronous zlib, and the panel takes an answer without content-encoding as it is.
+    const encoding = String(answer.headers["content-encoding"] ?? "").toLowerCase();
+    const unpack = encoding === "gzip" ? zlib.createGunzip() : encoding === "deflate" ? zlib.createInflate() : encoding === "br" ? zlib.createBrotliDecompress() : null;
+    const upstreamHeaders = { ...answer.headers };
+    if (unpack) {
+      delete upstreamHeaders["content-encoding"];
+      delete upstreamHeaders["content-length"];
+    }
     response.writeHead(200, {
       "content-type": "application/octet-stream",
       "x-upstream-status": String(answer.statusCode ?? 0),
-      "x-upstream-headers": encodeURIComponent(JSON.stringify(answer.headers))
+      "x-upstream-headers": encodeURIComponent(JSON.stringify(upstreamHeaders))
     });
-    answer.pipe(response);
+    const stream = unpack ? answer.pipe(unpack) : answer;
+    stream.pipe(response);
     answer.on("error", () => response.destroy());
+    if (unpack) unpack.on("error", () => response.destroy());
   });
   upstream.on("error", (error) => {
     if (!response.headersSent) sendError(response, 502, error);
@@ -334,10 +356,11 @@ function pageEnv() {
     token: TOKEN,
     platform: process.platform,
     release: os.release(),
+    arch: process.arch,
     pid: process.pid,
     root: DIST,
     home: os.homedir(),
-    tmp: os.tmpdir(),
+    tmp: PANEL_TMP,
     cwd: DIST,
     env,
     effectcraft: effectcraftVersion,

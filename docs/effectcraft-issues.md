@@ -46,6 +46,8 @@ each API name and topic). Related, not duplicates:
 | 8 | Scripting: After Effects matchNames for stroke Dashes and text Path Options | [#815](https://github.com/storytold/effectcraft/issues/815) |
 | 9 | Scripting: smaller gaps (`saveFrameToPng`, `layer.position`, `app.fonts`, `Folder.temp`, `$.getenv`, `File.rename`, `e.line`) | [#816](https://github.com/storytold/effectcraft/issues/816) |
 | 10 | Scripting: `File` with `encoding = "BINARY"` turns byte 0x89 into U+FFFD | [#817](https://github.com/storytold/effectcraft/issues/817) |
+| 11 | Expressions: `sampleImage()` on a footage layer gives `[0, 0, 0, 0]` | draft, not posted yet |
+| 12 | Scripting: a layer selected by script in a comp that is not open is not selected in the next script | draft, not posted yet |
 
 ---
 
@@ -637,6 +639,92 @@ writeLn(codes.join(" "));
 
 **How LazyMapLayers works around it.** Its companion program (Node) copies and writes binary files;
 the host script only reads and writes text.
+
+---
+
+## 11. Expressions: `sampleImage()` on a footage layer gives `[0, 0, 0, 0]`
+
+Draft (found 2026-10-12 with LazyMapLayers 1.2, not posted yet).
+
+**What happens.** `sampleImage()` reads the right colour from a solid, a shape layer and a precomp of a
+solid, but from an imported image (a PNG) it gives `[0, 0, 0, 0]`, at any point and any time, with no
+expression error. A precomp that holds the image gives the same through a Layer Control. LazyMapLayers 1.2's
+Self-test samples its rendered frame this way to check that After Effects shows the frame's colours.
+
+**What After Effects does.** Gives the image's colour at that point (RGBA, 0 to 1).
+
+**Repro.** Put any opaque PNG `frame.png` next to a saved project and run
+`effectcraft-cli script repro.jsx folder/project.ecproj` (change `dir`):
+
+```js
+var dir = "C:/path/to/folder";
+var comp = app.project.items.addComp("Scene", 640, 360, 1, 1, 25);
+var inner = app.project.items.addComp("Inner", 640, 360, 1, 1, 25);
+inner.layers.addSolid([0, 1, 0], "Green", 640, 360, 1);
+comp.layers.add(inner).name = "Pre";
+comp.layers.add(app.project.importFile(new ImportOptions(new File(dir + "/frame.png")))).name = "Img";
+comp.layers.addSolid([1, 0, 0], "Red", 640, 360, 1);
+var cc = comp.layers.addNull().property("ADBE Effect Parade").addProperty("ADBE Color Control").property(1);
+var names = ["Red", "Pre", "Img"];
+for (var i = 0; i < names.length; i++) {
+  cc.expression = 'thisComp.layer("' + names[i] + '").sampleImage([320, 180], [0.5, 0.5], true, time);';
+  writeLn(names[i] + ": " + cc.valueAtTime(0, false).join(", ") + "   expressionError=" + JSON.stringify(cc.expressionError));
+}
+```
+
+**Expected (After Effects).** `Red: 1, 0, 0, 1`, `Pre: 0, 1, 0, 1`, and for `Img` the PNG's colour at
+(320, 180) with alpha 1.
+
+**Actual (EffectCraft 0.8.0, Windows x64, headless; the app gives the same in the Self-test).**
+
+```
+Red: 1, 0, 0, 1   expressionError=""
+Pre: 0, 1, 0, 1   expressionError=""
+Img: 0, 0, 0, 0   expressionError=""
+```
+
+**How LazyMapLayers works around it** (`host/compat-post.jsx`): when the Self-test's sample comes back
+`[0, 0, 0, 0]` (which an opaque frame never is), it reports no sample, so the Self-test says the pixels
+were not compared (a warning) instead of failing. Nothing else in LazyMapLayers uses `sampleImage()`.
+
+---
+
+## 12. Scripting: a layer selected by script in a comp that is not open is not selected in the next script
+
+Draft (found 2026-10-12 with LazyMapLayers 1.2, not posted yet).
+
+**What happens.** `layer.selected = true` in a comp that is not the one open in the viewer shows in
+`comp.selectedLayers` for the rest of that script, but the next script (the next call over
+`--control`, the way a panel talks to the app) finds nothing selected there. In the comp open in the
+viewer the selection stays.
+
+**What After Effects does.** Every comp keeps its own layer selection, open or not; `selectedLayers`
+gives it in any later script.
+
+**Repro.** Two calls over the control channel (`effectcraft --control 9877`, `script.run`), or two
+scripts run one after the other in the app:
+
+```js
+// Call 1
+var a = app.project.items.addComp("Active", 400, 300, 1, 2, 25);
+a.openInViewer();
+var c = app.project.items.addComp("Other", 400, 300, 1, 2, 25);
+c.layers.addText("A").name = "A";
+c.layers.addText("B").name = "B";
+c.layer("B").selected = true;
+c.selectedLayers.length + " " + c.layer("B").selected;   // "1 true"
+
+// Call 2
+var c = null;
+for (var k = 1; k <= app.project.numItems; k++) if (app.project.item(k).name === "Other") c = app.project.item(k);
+c.selectedLayers.length + " " + c.layer("B").selected;   // After Effects: "1 true"
+```
+
+**Actual (EffectCraft 0.8.0, Windows x64, in the app over `--control`).** Call 1 gives `1 true`, call 2
+gives `0 false`. With `c.openInViewer()` before selecting, call 2 gives `1 true`.
+
+**How LazyMapLayers works around it.** It does not: in normal use the layers are selected in the open
+scene. Two of LazyMapLayers' own tests (LB2, LB3) select by script in a scene that is not open and fail.
 
 ---
 

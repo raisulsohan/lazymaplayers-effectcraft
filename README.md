@@ -1,6 +1,6 @@
 # LazyMapLayers for EffectCraft
 
-<p align="center"><a href="https://github.com/raisulsohan/lazymaplayers-effectcraft/releases/latest"><img src="docs/images/cover.png" width="100%" alt="LazyMapLayers now runs in EffectCraft: 369 of 369 expressions match After Effects; unzip and run; free, MIT. A globe rendered by LazyMapLayers, with names in their own scripts." /></a></p>
+<p align="center"><a href="https://github.com/raisulsohan/lazymaplayers-effectcraft/releases/latest"><img src="docs/images/cover.png" width="100%" alt="LazyMapLayers now runs in EffectCraft: 621 of 621 expressions match After Effects; unzip and run; free, MIT. A globe rendered by LazyMapLayers, with names in their own scripts." /></a></p>
 
 LazyMapLayers (the map design and map animation panel for After Effects) running in
 [EffectCraft](https://github.com/storytold/effectcraft), the open-source After Effects-style
@@ -82,20 +82,28 @@ node tools/build.mjs
 - This version keeps its renders, render queue, drafts and settings in
   `%APPDATA%\LazyMapLayers for EffectCraft` (macOS: `~/Library/Application Support/LazyMapLayers for EffectCraft`).
 - The downloads are **shared** with the After Effects version: `offline`, `regions`, `terrain`,
-  `history`, `imagery`, `boundaries`, `osm`, `satellite` and `districts` under this version's data
+  `history`, `imagery`, `boundaries`, `osm`, `osm-cache` (street detail), `osm-roads` (routes on
+  roads), `satellite` and `districts` under this version's data
   folder are read from and written to the After Effects version's data folder
   (`%APPDATA%\LazyMapLayers`). A region or offline pack downloaded in either version is there in both.
   `LMLEC_AE_DATA` points the companion at another folder for them.
+- The panel's temporary files (job files, its log, in-app test requests) go to
+  `%TEMP%\LazyMapLayers for EffectCraft`, apart from the After Effects version's, so both can run at once.
 
 ## What works
 
-LazyMapLayers' own in-app test suites, run in EffectCraft 0.8.0 through this version
+LazyMapLayers 1.2.0's own in-app test suites, run in EffectCraft 0.8.0 through this version
 (`tools/run-suites.mjs`), and every kind of generated expression compared with After Effects' maths
-on real EffectCraft layers (`tools/check-expressions.ts`: 369 of 369).
+on real EffectCraft layers (`tools/check-expressions.ts`: 621 of 621, in 59 kinds, the arrow rig's
+included).
 
 | Suite | What | In EffectCraft |
 |---|---|---|
 | H1 | Host API through the bridge, one undo step per action | 9 / 9 |
+| AR1 | The arrow rig (1.2): line and head on one layer, tapered, dashed, both ends | pass |
+| RR1 | Routes on roads (1.2), roads from Overpass, kept on disk | pass |
+| SF1 | The Self-test (1.2) | 4 of 5 pass, one warning (see below) |
+| SD1 | Street detail on demand (1.2) | the planet's tiles come through the companion (checked by hand); the suite needs a light pack beside a development build of the After Effects version |
 | P1, C1 | Pins and the matched 3D camera against the camera maths | pass |
 | E1 | End to end | pass |
 | R1 | Renderer, passes, cache, preview proxy over the final render | pass but one check (see below) |
@@ -104,7 +112,7 @@ on real EffectCraft layers (`tools/check-expressions.ts`: 369 of 369).
 | AT1, MF1 | Your own layers attached to a place; scale bar, north arrow, graticule | pass |
 | RT1, DR1 | Routes, travellers, dashed lines; drawn paths as routes | pass |
 | SL1, HL1 | Outlines as shape layers; highlights as their own pass | pass (SL1: slow, see below) |
-| LB2 – LB6 | Label template, keep-out zones, nature names, names inside Paris along their streets, oceans on a globe | pass |
+| LB2 – LB6 | Label template, keep-out zones, nature names, names inside Paris along their streets, oceans on a globe | pass in 1.1.2; LB2 and LB3 select layers by script in a comp that is not open, see below |
 | LD1, LD2 | Label designs of your own, with each place's picture | pass |
 | FO1, FB1, LK1 | A map that follows another; the feature browser; your own looks | pass |
 | DT1, DT2, DT3, HT1 | Numbers on the map, categories and years, prisms, heat | pass |
@@ -148,6 +156,14 @@ EffectCraft as [#808 – #817](https://github.com/storytold/effectcraft/issues?q
 - **Your own imagery test.** LazyMapLayers' OI1 test starts a tile server inside the panel, which a
   browser window cannot; the feature itself (imagery from a server on this computer) uses the
   companion's downloads.
+- **Self-test pixels.** The Self-test (Maps ▸ About) checks that After Effects shows the rendered frame's
+  colours with `sampleImage()`, which gives `[0, 0, 0, 0]` on footage in EffectCraft 0.8.0. That check
+  is reported as not compared (a warning) instead of failing; the other four checks run as in After Effects.
+- **Selection in a comp that is not open.** EffectCraft keeps layers selected by a script only in the
+  comp open in the viewer. Selecting in the scene you are working in (the usual way, for a label
+  template from a text layer or the layers names keep away from) works; LazyMapLayers' LB2 and LB3
+  tests, which select by script in a
+  scene that is not open, do not.
 
 ## The compatibility layer
 
@@ -173,6 +189,8 @@ After Effects. They use EffectCraft's own engine commands, never its files.
 | No `app.fonts`; a `TextDocument` set by PostScript name reports that name as its family (the text itself renders right) | PostScript names matched to installed families and styles | [#816](https://github.com/storytold/effectcraft/issues/816) |
 | A pass layer keeps its old anchor point and out point when a render of another size or length replaces its footage | centred and as long as its footage | [#813](https://github.com/storytold/effectcraft/issues/813) |
 | Errors carry no line number (`e.line`) | the line, from the stack | [#816](https://github.com/storytold/effectcraft/issues/816) |
+| `sampleImage()` gives `[0, 0, 0, 0]` on footage (the Self-test's pixel check) | no sample reported, so the Self-test warns instead of failing | draft |
+| (not EffectCraft's) the page has no Node `zlib`; Overpass answers come gzipped | the companion unpacks answers before the panel sees them | |
 
 ## Security
 

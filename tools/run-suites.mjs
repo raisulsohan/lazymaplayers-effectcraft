@@ -7,7 +7,8 @@
 // LazyMapLayers' own runner does with a throwaway project.
 //
 // The request and the results go through the panel's own file calls, so they land where the panel
-// and EffectCraft look. Results: %TEMP%\LazyMapLayers\spikes\results.json, summarised here.
+// and EffectCraft look. Results: %TEMP%\LazyMapLayers for EffectCraft\LazyMapLayers\spikes\results.json
+// (the panel has a temp folder of its own, so a run never meets the After Effects version's), summarised here.
 
 import { Control } from "../app/control.mjs";
 import { panelPage } from "./cdp.mjs";

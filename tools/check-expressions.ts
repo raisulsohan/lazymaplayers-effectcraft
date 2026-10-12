@@ -23,6 +23,7 @@ const { anchoredPositionExpression, curvedLabelPathExpression, leaderPathExpress
 const { float32, pinExpressions } = await core("ae/pinExpressions.ts");
 const { lodPathExpression, shapePathExpressions, shapeRings } = await core("ae/shapeExpressions.ts");
 const { minimapBoxExpression, northRotationExpression, scaleBarPathExpression, scaleBarTextExpression } = await core("ae/mapFurniture.ts");
+const { arrowRigExpressions } = await core("ae/arrowRig.ts");
 const { greatCircle } = await core("geo/greatCircle.ts");
 const { chartTimeRemapExpression, growingLineExpression, lineHeadExpression, lineLabelExpression, lineValueExpression } = await core("ae/chartExpressions.ts");
 
@@ -129,6 +130,31 @@ for (const globe of [false, true]) {
     add(`traveller position ${kind} ${i}`, traveller.position, { own: travellerOwn, map, comp, value: [0, 0] });
     add(`traveller rotation ${kind} ${i}`, traveller.rotation, { own: travellerOwn, map, comp, value: 10 }, 1e-5);
     add(`traveller opacity ${kind} ${i}`, traveller.opacity, { own: travellerOwn, map, comp, value: 90 });
+    const arrow = arrowRigExpressions(route, map.height / 1080);
+    const arrowProgress = float32(random() * 100);
+    const arrowOwn = {
+      Map: "MAP" as const,
+      Progress: arrowProgress,
+      Tail: float32(random() * arrowProgress),
+      Width: float32(2 + random() * 20),
+      "Tail Width": 35,
+      "Taper Length": 100,
+      "Head Size": float32(50 + random() * 100),
+      "Head Style": 1 + (i % 3),
+      "Both Ends": (i >> 1) % 2,
+      Dash: i % 2 ? 12 : 0,
+      Gap: 8,
+      "Dash Speed": 30,
+      "Outline Width": i % 2 ? 3 : 0
+    };
+    const arrowScalars: (keyof typeof arrow)[] = ["trimStart", "trimEnd", "headRotation", "tailRotation", "fillOpacity", "chevronOpacity", "lineWidth", "outlineWidth", "headOutlineWidth", "outlineOpacity", "taperStartWidth", "taperStartLength", "dash", "gap", "dashOffset"];
+    add(`arrow path ${kind} ${i}`, arrow.path, { own: arrowOwn, map, comp, value: null });
+    add(`arrow head shape ${kind} ${i}`, arrow.headPath, { own: arrowOwn, map, comp, value: null });
+    add(`arrow head position ${kind} ${i}`, arrow.headPosition, { own: arrowOwn, map, comp, value: [0, 0] });
+    add(`arrow tail position ${kind} ${i}`, arrow.tailPosition, { own: arrowOwn, map, comp, value: [0, 0] });
+    add(`arrow head opacity ${kind} ${i}`, arrow.headOpacity, { own: arrowOwn, map, comp, value: 100 });
+    add(`arrow tail opacity ${kind} ${i}`, arrow.tailOpacity, { own: arrowOwn, map, comp, value: 100 });
+    for (const which of arrowScalars) add(`arrow ${which} ${kind} ${i}`, arrow[which], { own: arrowOwn, map, comp, value: 0, time: 1.5 }, 1e-5);
     const centre = near(view, spread);
     const radius = spread / 4;
     const circle = (r: number) => Array.from({ length: 24 }, (_, k) => [centre.lng + r * Math.cos((k / 24) * 2 * Math.PI), centre.lat + r * Math.sin((k / 24) * 2 * Math.PI)]);
