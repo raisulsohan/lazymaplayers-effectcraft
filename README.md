@@ -94,8 +94,8 @@ node tools/build.mjs
 
 ## What works
 
-LazyMapLayers 1.3.0's own in-app test suites, run in EffectCraft through this version
-(`tools/run-suites.mjs`), and every kind of generated expression compared with After Effects' maths
+LazyMapLayers 1.4.0's own in-app test suites, run in EffectCraft 0.11.1 through this version
+(`tools/run-suites.mjs`; the 0.8.0 column is LazyMapLayers 1.3.0 in EffectCraft 0.8.0), and every kind of generated expression compared with After Effects' maths
 on real EffectCraft layers (`tools/check-expressions.ts`: 657 of 657, in 62 kinds, the arrow rig's and
 the borders between areas included). On EffectCraft 0.11.1 the expressions also give 657 of 657 as
 LazyMapLayers writes them (`--raw`), without this version's rewrite.
@@ -103,6 +103,7 @@ LazyMapLayers writes them (`--raw`), without this version's rewrite.
 | Suite | What | EffectCraft 0.11.1 | EffectCraft 0.8.0 |
 |---|---|---|---|
 | H1 | Host API through the bridge, one undo step per action | 9 / 9 | 9 / 9 |
+| (1.4) | *Only the story's names* (`keepLabels`): the named labels and their dots stay, the others go, in one undo step (checked by hand) | pass | not in 1.3 |
 | FB1 | The feature browser, with 1.3's TCX import, lines from a hub and the borders between areas as one shape layer of open paths | pass | pass |
 | AR1 | The arrow rig (1.2): line and head on one layer, tapered, dashed, both ends | pass | pass |
 | RR1 | Routes on roads (1.2), roads from Overpass, kept on disk | pass | pass |
@@ -116,20 +117,22 @@ LazyMapLayers writes them (`--raw`), without this version's rewrite.
 | AT1, MF1 | Your own layers attached to a place; scale bar, north arrow, graticule | pass | pass |
 | RT1, DR1 | Routes, travellers, dashed lines; drawn paths as routes | pass | pass |
 | FL1 | Flows: arcs whose widths follow a table of amounts | pass | not run |
-| SL1, HL1 | Outlines as shape layers; highlights as their own pass | HL1 pass; SL1 all but its speed check (one outline adds 1,526 ms to a frame, see below) | HL1 pass; SL1 all but its speed check (667 ms) |
+| SL1, HL1 | Outlines as shape layers; highlights as their own pass | HL1 pass; SL1 all but its speed check (one outline adds 1,470 ms to a frame, see below) | HL1 pass; SL1 all but its speed check (667 ms) |
 | LB2 – LB6 | Label template, keep-out zones, nature names, names inside Paris along their streets, oceans on a globe | LB2, LB3, LB4, LB6 pass; LB5 not run (needs the Paris region) | pass in 1.1.2; LB2 and LB3 select layers by script in a comp that is not open, see below |
 | LD1, LD2 | Label designs of your own, with each place's picture | pass | pass |
 | FO1, LK1 | A map that follows another; your own looks | pass | pass |
 | DT1, DT2, DT3, HT1 | Numbers on the map, categories and years, prisms, heat | pass | pass |
 | OW1, WB1, SAT1 | The offline world, cities and roads at zooms 7 – 9, satellite imagery | pass | pass |
-| SH1 | The shot list: 601 frames match the camera maths | pass but speed (applying again: 920 ms) | pass but speed |
+| SH1 | The shot list: 601 frames match the camera maths | pass but speed (applying again: 834 ms) | pass but speed |
 | DU1 | A copied scene gets its own map | pass | pass but undo |
 | ES1 | A Google Earth Studio camera brought in | values as 32-bit floats (see below) | the same |
 | ST1 | Generated layers take their colours and fonts from the map's look | pass but the font (Myriad Pro is not installed, see below) | not run |
 | X1 | Expressions in both expression engines | none in EffectCraft (see below) | the same |
-| S1, S4 | Renderer speed (the panel's renderer, not EffectCraft) | S1: 170 ms a frame at 1080p, 609 ms at 4K; S4 needs the Paris region | 83 ms a frame at 1080p, 268 ms at 4K |
+| S1, S4 | Renderer speed (the panel's renderer, not EffectCraft) | S1: 191 ms a frame at 1080p, 585 ms at 4K; S4 needs the Paris region | 83 ms a frame at 1080p, 268 ms at 4K |
 
 OI1 cannot run in a browser window (see below).
+
+<a id="known-limitations-effectcraft-080"></a>
 
 ## Known limitations
 
@@ -158,7 +161,7 @@ EffectCraft as [#808 – #817](https://github.com/storytold/effectcraft/issues?q
 - **One expression engine.** EffectCraft runs every expression in its JavaScript engine; there is no
   Legacy ExtendScript engine to choose. LazyMapLayers' expressions run in both, so this changes nothing.
 - **Detailed outlines render slowly.** A country outline as a shape layer (many paths, with
-  expressions) adds about one and a half seconds to an EffectCraft 0.11.1 frame (SL1: 1,526 ms; 667 ms
+  expressions) adds about one and a half seconds to an EffectCraft 0.11.1 frame (SL1: 1,470 ms; 667 ms
   on 0.8.0). A single 20,000-point path without expressions renders in about 18 ms (0.8.0), so it is
   the many paths or their
   expressions.
