@@ -22,9 +22,12 @@
     };
 
     /*
-     * The Self-test samples the rendered frame with sampleImage(); in EffectCraft 0.8.0 that gives
+     * The Self-test samples the rendered frame with sampleImage(); before EffectCraft 0.10.0 that gives
      * [0, 0, 0, 0] on a footage layer (and a precomp holding one), which an opaque frame never is. Then
      * no sample is reported, and the Self-test says the pixels were not compared instead of failing.
+     * EffectCraft 0.10.0 and later sample footage as After Effects does (storytold/effectcraft#1000),
+     * so the sample is never all zero there and this changes nothing; it stays while older builds
+     * are supported.
      */
     if (LML.selfTest && LML.selfTest.run) {
         var selfTestRun = LML.selfTest.run;
@@ -128,6 +131,22 @@
         }
     };
     LMLEC.fixes.push("label pictures fitted after their layer is replaced");
+
+    /*
+     * A copied map is separated with replaceSource, which here gives the copy's layer a new id. The
+     * panel remembers the copy by that key so that, once Undo brings the copy back, it is left alone;
+     * in After Effects the key stays the same, so here it is the key the copy had before.
+     */
+    if (LML.dupes && LML.dupes.separate) {
+        var separate = LML.dupes.separate;
+        LML.dupes.separate = function (original, copy) {
+            var key = LML.dupes.keyOf(copy);
+            var out = separate(original, copy);
+            if (out && typeof out === "object") out.key = key;
+            return out;
+        };
+        LMLEC.fixes.push("a separated copy keeps its key across replaceSource");
+    }
 
     /*
      * EffectCraft's errors have no line attribute, only a stack; LML.call reports e.line, so each API

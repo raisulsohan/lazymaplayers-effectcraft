@@ -33,6 +33,7 @@ var LMLEC = (function () {
     }
 
     // Layer.comment can be read but not written (EffectCraft 0.8.0): every LML tag lives there.
+    // EffectCraft 0.9.2 has the setter (storytold/effectcraft#808), and then it is used as it is.
     fix("Layer.comment setter", function () {
         setter(Layer.prototype, "comment", function (original) {
             if (original) return original;
@@ -106,6 +107,8 @@ var LMLEC = (function () {
     /*
      * app.executeCommand(number) takes EffectCraft's own command numbers, not After Effects' menu
      * command ids; the After Effects ids LazyMapLayers uses are translated to EffectCraft commands.
+     * EffectCraft 0.9.2 makes 16 Undo itself (storytold/effectcraft#812); the translation does the same
+     * there and stays for older builds.
      */
     fix("app.executeCommand with After Effects ids", function () {
         var AE_COMMANDS = { 16: "edit.undo" };
@@ -119,7 +122,8 @@ var LMLEC = (function () {
     /*
      * Layer.sourcePointToComp and compPointToSource return the point unchanged in EffectCraft 0.8.0.
      * Here they apply the layer's 2D transform (anchor point, scale, rotation, position) and its
-     * parents', at the comp's current time.
+     * parents', at the comp's current time. EffectCraft 0.10.0 converts them itself
+     * (storytold/effectcraft#808) with the same result for 2D layers; this stays for older builds.
      */
     fix("Layer.sourcePointToComp and compPointToSource", function () {
         function multiply(m, n) {
@@ -158,6 +162,8 @@ var LMLEC = (function () {
      * Marker parameters (MarkerValue.setParameters) reach EffectCraft only with a cue point name; After
      * Effects keeps them without one, and LazyMapLayers marks its shot markers that way. A marker with
      * parameters and no name goes in as a cue point with an empty name, which EffectCraft keeps.
+     * EffectCraft 0.9.2 keeps them without a name too (storytold/effectcraft#808); this stays for
+     * older builds.
      */
     fix("marker parameters without a cue point name", function () {
         var P = MarkerProperty.prototype;
@@ -216,7 +222,9 @@ var LMLEC = (function () {
      * Some groups name their properties differently in EffectCraft 0.8.0. A stroke's Dashes always
      * hold one dash, gap and offset ("dash", "gap", "offset"), where After Effects adds "ADBE Vector
      * Stroke Dash 1"... on demand; a text layer's Path Options are "path", "perpendicular"... Asking
-     * for, or adding, the After Effects name gives EffectCraft's property.
+     * for, or adding, the After Effects name gives EffectCraft's property. EffectCraft 0.9.2 (Path
+     * Options) and 0.10.0 (Dashes) use the After Effects names, so EffectCraft's own lookup goes first
+     * and the old name is only the fallback for older builds.
      */
     fix("After Effects matchNames in groups that name them differently", function () {
         var ALIASES = {
@@ -240,13 +248,19 @@ var LMLEC = (function () {
         }
         P.addProperty = function (name) {
             var other = alias(this, name);
-            if (other) return property.call(this, other);
-            return addProperty.apply(this, arguments);
+            if (!other) return addProperty.apply(this, arguments);
+            try {
+                var added = addProperty.apply(this, arguments);
+                if (added) return added;
+            } catch (e) {
+                // 0.8.0: Can not add a property to "Dashes".
+            }
+            return property.call(this, other);
         };
         P.property = function (name) {
             var other = alias(this, name);
-            if (other) return property.call(this, other);
-            return property.apply(this, arguments);
+            var found = property.apply(this, arguments);
+            return found || !other ? found : property.call(this, other);
         };
     });
 
@@ -255,7 +269,8 @@ var LMLEC = (function () {
      * b.containingComp` and `other === layer` work; EffectCraft 0.8.0 makes a new object on every
      * access. Every item and layer object goes through one cache, keyed by its id (layers by comp and
      * id): the factories, the containingComp getter, and what the collections' and objects' methods
-     * return.
+     * return. EffectCraft 0.9.2 keeps one object per item and layer itself (storytold/effectcraft#811);
+     * the cache stays for older builds and also keeps the object replaceSource below hands back.
      */
     fix("one object per item and layer", function () {
         var cache = {};
@@ -532,6 +547,26 @@ var LMLEC = (function () {
         return file && file.fsName ? String(file.fsName) : String(file);
     };
 
+    /** The descriptor of `name` on `object` or the first prototype that has one. */
+    function descriptorOf(object, name) {
+        for (var o = object; o; o = Object.getPrototypeOf(o)) {
+            var d = Object.getOwnPropertyDescriptor(o, name);
+            if (d) return d;
+        }
+        return null;
+    }
+
+    /*
+     * EffectCraft 0.11.1 has proxies of its own: setProxyWithSequence, setProxyToNone, a useProxy
+     * that can be set and a proxySource that reads the item's proxy. Then all of those stay
+     * EffectCraft's (mixing them with the record below would lose the proxy); only the proxy's
+     * conformFrameRate is added. Before, every one of them is this layer's.
+     */
+    var nativeProxy = (function () {
+        var d = descriptorOf(FootageItem.prototype, "useProxy");
+        return !!(d && d.set) && typeof FootageItem.prototype.setProxyWithSequence === "function" && typeof FootageItem.prototype.setProxyToNone === "function";
+    })();
+
     /** The proxy this compatibility layer set on a footage item ({path, on, fps}), kept in its comment. */
     function proxyRecord(item) {
         var lines = String(item.comment || "").split("\n");
@@ -562,19 +597,18 @@ var LMLEC = (function () {
                 __call("file.replaceFootage", { item: this.__id, path: pathOf(file), sequence: true, alphabetical: !!forceAlphabetical });
             };
         }
+        if (nativeProxy) return;
         var setProxy = function (file) {
             __call("file.setProxy", { item: this.__id, path: pathOf(file) });
             __call("file.useProxy", { item: this.__id, on: true });
             writeProxyRecord(this, { path: pathOf(file), on: true });
         };
-        if (typeof proto.setProxyWithSequence !== "function") proto.setProxyWithSequence = setProxy;
+        proto.setProxyWithSequence = setProxy;
         if (typeof proto.setProxy !== "function") proto.setProxy = setProxy;
-        if (typeof proto.setProxyToNone !== "function") {
-            proto.setProxyToNone = function () {
-                __call("file.setProxyNone", { item: this.__id });
-                writeProxyRecord(this, null);
-            };
-        }
+        proto.setProxyToNone = function () {
+            __call("file.setProxyNone", { item: this.__id });
+            writeProxyRecord(this, null);
+        };
     });
 
     /*
@@ -584,13 +618,10 @@ var LMLEC = (function () {
      */
     fix("FootageItem.proxySource and useProxy, mainSource.conformFrameRate", function () {
         var makeItem = __item;
-        var mainOf = null;
-        var p = FootageItem.prototype;
-        while (p && !mainOf) {
-            var d = Object.getOwnPropertyDescriptor(p, "mainSource");
-            if (d && d.get) mainOf = d.get;
-            p = Object.getPrototypeOf(p);
-        }
+        var main = descriptorOf(FootageItem.prototype, "mainSource");
+        var mainOf = main && main.get ? main.get : null;
+        var proxy = descriptorOf(FootageItem.prototype, "proxySource");
+        var proxyOf = proxy && proxy.get ? proxy.get : null;
         __item = function (id) {
             var item = makeItem(id);
             if (!(item instanceof FootageItem)) return item;
@@ -602,8 +633,12 @@ var LMLEC = (function () {
                     get: function () {
                         var source = mainOf.call(item);
                         if (!source || typeof source !== "object") return source;
+                        // EffectCraft 0.11.1: one FootageSource per item, whose conformFrameRate works.
+                        var own = descriptorOf(source, "conformFrameRate");
+                        if (own && own.set) return source;
                         var fps = source.conformFrameRate;
                         Object.defineProperty(source, "conformFrameRate", {
+                            configurable: true,
                             get: function () {
                                 return fps;
                             },
@@ -615,6 +650,31 @@ var LMLEC = (function () {
                         return source;
                     }
                 });
+            }
+            if (nativeProxy) {
+                if (proxyOf) {
+                    Object.defineProperty(item, "proxySource", {
+                        configurable: true,
+                        get: function () {
+                            var source = proxyOf.call(item);
+                            if (!source || typeof source !== "object") return source;
+                            var own = descriptorOf(source, "conformFrameRate");
+                            if (own && own.set) return source;
+                            Object.defineProperty(source, "conformFrameRate", {
+                                configurable: true,
+                                get: function () {
+                                    return item.__lmlecProxyFps || 0;
+                                },
+                                set: function (v) {
+                                    __call("file.interpretProxy", { item: item.__id, frameRate: Number(v) });
+                                    item.__lmlecProxyFps = Number(v);
+                                }
+                            });
+                            return source;
+                        }
+                    });
+                }
+                return item;
             }
             Object.defineProperty(item, "proxySource", {
                 configurable: true,
